@@ -13,6 +13,24 @@
 
 ---
 
+## 📋 Índice
+
+- [🎯 Características](#-características)
+- [🧪 Laboratorios disponibles](#-laboratorios-disponibles)
+- [🏆 Sistema de Progreso](#-sistema-de-progreso)
+- [Sistema de Dificultad](#sistema-de-dificultad)
+- [🚀 Despliegue](#-despliegue)
+- [🔑 Credenciales de prueba](#-credenciales-de-prueba)
+- [🚩 Flags del laboratorio de Bruteforce](#-flags-del-laboratorio-de-bruteforce)
+- [🔺 Escalada de Privilegios (SSH)](#-escalada-de-privilegios-ssh)
+- [🛠️ Herramientas compatibles](#️-herramientas-compatibles)
+- [📁 Estructura del proyecto](#-estructura-del-proyecto)
+- [⚙️ Variables de configuración](#️-variables-de-configuración)
+- [🎓 Uso recomendado](#-uso-recomendado)
+- [📄 Licencia](#-licencia)
+
+---
+
 ## 🎯 Características
 
 - **39 laboratorios** cubriendo OWASP Top 10 + vulnerabilidades avanzadas + IA Attacks
