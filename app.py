@@ -602,6 +602,7 @@ def get_lab_flag_map():
         'llm_exfil': ['HL{d4t4_3xf1ltr4t3d_v14_llm}', 'HL{llm_data_exfil_success}'],
         'prompt_injection': ['HL{pr0mpt_1nj3ct10n_m4st3r}', 'HL{prompt_injection_system_bypass}'],
         'prompt_leaking': ['HL{pr0mpt_l34k3d_succ3ssfully}', 'HL{prompt_leaking_system_prompt_exposed}'],
+        'final_boss': ['HL{f1n4l_b055_0v3rdr1v3}'],
     }
 
     # Labs with explicit flag output on screen should not accept root fallback.
@@ -631,6 +632,7 @@ def get_lab_flag_map():
         'ai_jailbreak',
         'indirect_injection',
         'ai_supply_chain',
+        'final_boss',
     }
 
     for lab in get_lab_list():

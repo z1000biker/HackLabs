@@ -143,9 +143,14 @@ echo '  [*] Configurando vectores de escalada de privilegios...'
 # Flag de root (objetivo final para todos los vectores)
 printf 'HL{r00t_pr1v3sc_succ3ss}\n' > /root/root.txt
 
+# Flag del Final Boss (ubicacion dedicada en root/final_boss)
+mkdir -p /root/final_boss
+printf 'HL{f1n4l_b055_0v3rdr1v3}\n' > /root/final_boss/final_flag.txt
+
 # A05 – Security Misconfiguration: flag en static/files/ (directory listing expuesto)
 # El archivo A05-flag.txt está en static/files/ dentro del código fuente de la app
 chmod 600 /root/root.txt 2>/dev/null || true
+chmod 600 /root/final_boss/final_flag.txt 2>/dev/null || true
 
 # --- admin: sudo completo (necesario para verificar permisos en la máquina) ---
 mkdir -p /etc/sudoers.d
