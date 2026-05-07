@@ -1029,11 +1029,6 @@ def progress_page():
         'SELECT cert_code, issued_at FROM completion_certificates WHERE account_username=?',
         (app_user,)
     ).fetchone()
-    verify_code = _normalize_cert_code(request.args.get('verify_code'))
-    verify_status = None
-    verify_cert = None
-    if request.args.get('verify_code') is not None:
-        verify_status, verify_cert = _resolve_certificate_verification(db, verify_code)
     return render_template('progress.html',
         labs=labs,
         completed=completed,
@@ -1048,9 +1043,6 @@ def progress_page():
         special_rank=_get_special_rank(app_user),
         badge_catalog=unlocked_badges,
         certificate=cert,
-        verify_code=verify_code,
-        verify_status=verify_status,
-        verify_cert=verify_cert,
     )
 
 
@@ -1093,6 +1085,47 @@ def download_completion_certificate():
         filename = f'hacklabs-certificate-{app_user}.html'
         resp.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
     return resp
+
+
+@app.route('/progress/certificado')
+def certificate_page():
+    app_user = session.get('app_user')
+    app_type = session.get('app_user_type')
+    if not app_user or app_type != 'account':
+        return redirect('/account/login?next=/progress/certificado')
+    db = get_db()
+    labs = get_lab_list()
+    rows = db.execute(
+        'SELECT lab_id FROM user_progress WHERE account_username=?',
+        (app_user,)
+    ).fetchall()
+    completed = {r['lab_id'] for r in rows}
+    cert = db.execute(
+        'SELECT cert_code, issued_at FROM completion_certificates WHERE account_username=?',
+        (app_user,)
+    ).fetchone()
+    verify_code = _normalize_cert_code(request.args.get('verify_code'))
+    verify_status = None
+    verify_cert = None
+    if request.args.get('verify_code') is not None:
+        verify_status, verify_cert = _resolve_certificate_verification(db, verify_code)
+    account_user = db.execute(
+        'SELECT certificate_name FROM account_users WHERE username=?',
+        (app_user,)
+    ).fetchone()
+    learner_name = (account_user['certificate_name'] or '').strip() if account_user else ''
+    return render_template(
+        'certificate_page.html',
+        labs=labs,
+        completed=completed,
+        certificate=cert,
+        learner_name=learner_name,
+        app_user=app_user,
+        rank=_get_special_rank(app_user) or 'Master of HackLabs',
+        verify_code=verify_code,
+        verify_status=verify_status,
+        verify_cert=verify_cert,
+    )
 
 
 @app.route('/progress/certificate/verify')
