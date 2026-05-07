@@ -143,8 +143,16 @@ Al completar el **100% de los laboratorios** (Lv.8 Master) se desbloquea automá
 
 - Descargable en **HTML** y **PDF** con export exacto del certificado, sin márgenes añadidos ni deformación
 - Incluye nombre de usuario, rango alcanzado, código único verificable y fecha de emisión
-- El código del certificado puede verificarse en `/progress/certificate/verify`
+- El código del certificado puede verificarse en `/progress/certificate/verify` y también desde el bloque **Validar certificado** en `/progress` (aunque no tengas 100% completado)
 - No requiere pago ni suscripción — se genera al instante
+
+#### Verificación local entre máquinas (offline)
+
+HackLabs emite certificados con **firma criptográfica verificable offline**. Esto permite validar en local un certificado emitido en otra máquina, sin servidor central.
+
+- Si la firma del código es válida: el certificado se considera auténtico.
+- Si la firma no coincide: el código es inválido.
+- La clave de verificación compartida está **fijada en el código** para todas las instalaciones oficiales de HackLabs, lo que garantiza la verificación entre máquinas offline.
 
 ---
 

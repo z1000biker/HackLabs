@@ -356,7 +356,7 @@
 
       {% if current_lab_id and current_lab_id != 'c2_sliver' %}
       {% set _wide_flag_labs = ['ai_supply_chain', 'llm_exfil'] %}
-      <div class="{% if current_lab_id in _wide_flag_labs %}max-w-5xl{% else %}max-w-3xl{% endif %} mx-auto px-6 pb-6">
+      <div class="{% if current_lab_id in _wide_flag_labs %}max-w-5xl{% elif current_lab_id == 'final_boss' %}max-w-4xl{% else %}max-w-3xl{% endif %} mx-auto px-6 pb-6">
         <div class="hl-card border-l-4" style="border-left-color:var(--hl-primary)">
           <div class="text-xs uppercase tracking-wider mb-2" style="color:var(--hl-primary)">Validar Flag</div>
           {% if is_progress_user %}

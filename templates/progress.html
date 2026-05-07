@@ -204,6 +204,47 @@
   </div>
   {% endif %}
 
+  <div class="reward-card mb-6">
+    <div class="reward-card-title">Validar certificado</div>
+    <div class="mt-2 text-sm text-gray-300 mb-3">
+      Verifica codigos de certificado emitidos por HackLabs, incluso si aun no has completado el 100%.
+    </div>
+    <form method="GET" action="/progress" class="flex gap-2 flex-wrap">
+      <input
+        name="verify_code"
+        value="{{ verify_code or '' }}"
+        class="hl-input font-mono text-xs flex-1 min-w-[240px]"
+        placeholder="HL-CERT-XXXXXXXXXXXX"
+        autocomplete="off"
+        maxlength="240">
+      <button type="submit" class="lab-complete-btn" style="height:36px">
+        <i class="ph ph-shield-check"></i>
+        <span>Validar codigo</span>
+      </button>
+    </form>
+
+    {% if verify_status == 'valid' and verify_cert %}
+    <div class="reward-card reward-card--gold mt-4">
+      <div class="reward-card-title">Certificado valido</div>
+      <div class="mt-2 text-sm text-gray-200">Usuario: <span class="font-semibold">{{ verify_cert.account_username }}</span></div>
+      <div class="text-sm text-gray-300">Codigo: <span class="font-mono">{{ verify_cert.cert_code }}</span></div>
+      <div class="text-sm text-gray-400">Emitido: {{ verify_cert.issued_at }}</div>
+    </div>
+    {% elif verify_status == 'invalid_format' %}
+    <div class="alert-error text-sm mt-4">Formato invalido. Copia el codigo completo del certificado HackLabs.</div>
+    {% elif verify_status == 'invalid_signature' %}
+    <div class="alert-error text-sm mt-4">Codigo no valido: la firma criptografica no corresponde a un certificado emitido por HackLabs.</div>
+    {% elif verify_status == 'not_found' %}
+    <div class="alert-error text-sm mt-4">Codigo legacy no encontrado en esta instancia local de HackLabs.</div>
+    {% elif verify_status == 'empty' %}
+    <div class="alert-error text-sm mt-4">Introduce un codigo para validar.</div>
+    {% else %}
+    <div class="text-xs text-gray-500 mt-4">
+      Los certificados firmados por HackLabs se validan offline por firma. Los codigos legacy solo pueden verificarse en la instancia que los emitio.
+    </div>
+    {% endif %}
+  </div>
+
   <!-- Category mini bars -->
   <div class="grid grid-cols-3 gap-3 mb-6">
     {% for cat, cat_i18n, done, total, color in [

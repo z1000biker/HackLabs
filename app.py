@@ -52,6 +52,15 @@ app = Flask(__name__)
 app.secret_key = 'hacklabs_super_insecure_secret_2024'
 
 _SHARE_SERIALIZER = URLSafeSerializer(app.secret_key, salt='hacklabs-achievement-share-v1')
+_CERT_VERIFY_SHARED_SECRET = 'hacklabs-cert-verify-v1-f1b3e9c7a24d6f8b'
+_CERT_SERIALIZER = URLSafeSerializer(
+    _CERT_VERIFY_SHARED_SECRET,
+    salt='hacklabs-certificate-v1'
+)
+_CERT_PREFIX = 'HL-CERT-'
+_CERT_TOKEN_RE = re.compile(r'^[A-Za-z0-9._-]{16,220}$')
+_CERT_USER_RE = re.compile(r'^[A-Za-z0-9_.-]{1,64}$')
+_LEGACY_CERT_CODE_RE = re.compile(r'^HL-CERT-[A-F0-9]{12}$')
 
 # Configuración intencionalmente insegura
 app.config['SESSION_COOKIE_HTTPONLY'] = False
@@ -319,17 +328,145 @@ def _ensure_unlock_row(db, account_username):
     db.execute('INSERT OR IGNORE INTO user_unlocks (account_username) VALUES (?)', (account_username,))
 
 
+def _normalize_cert_code(value):
+    return (value or '').strip()
+
+
+def _build_signed_cert_code(account_username, issued_at=None, nonce=None):
+    issued_ts = int(time.time())
+    if isinstance(issued_at, str) and issued_at.strip():
+        try:
+            dt = datetime.datetime.fromisoformat(issued_at.replace('Z', '+00:00'))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+            issued_ts = int(dt.timestamp())
+        except Exception:
+            issued_ts = int(time.time())
+    payload = {
+        'v': 1,
+        'u': str(account_username or '').strip(),
+        'iat': issued_ts,
+        'n': (nonce or secrets.token_hex(4)).lower(),
+    }
+    return _CERT_PREFIX + _CERT_SERIALIZER.dumps(payload)
+
+
+def _verify_signed_cert_code(code):
+    normalized = _normalize_cert_code(code)
+    if not normalized.startswith(_CERT_PREFIX):
+        return None, 'invalid_format'
+    token = normalized[len(_CERT_PREFIX):]
+    if not _CERT_TOKEN_RE.fullmatch(token):
+        return None, 'invalid_format'
+    try:
+        payload = _CERT_SERIALIZER.loads(token)
+    except BadSignature:
+        return None, 'invalid_signature'
+
+    if not isinstance(payload, dict):
+        return None, 'invalid_signature'
+
+    username = str(payload.get('u') or '').strip()
+    issued_ts = payload.get('iat')
+    nonce = str(payload.get('n') or '').lower()
+    version = payload.get('v')
+    now_ts = int(time.time())
+    if (
+        version != 1
+        or not _CERT_USER_RE.fullmatch(username)
+        or not isinstance(issued_ts, int)
+        or issued_ts < 1577836800
+        or issued_ts > now_ts + 86400
+        or not re.fullmatch(r'[a-f0-9]{8}', nonce)
+    ):
+        return None, 'invalid_signature'
+
+    issued_at = datetime.datetime.utcfromtimestamp(issued_ts).strftime('%Y-%m-%d %H:%M:%S')
+    cert = {
+        'account_username': username,
+        'cert_code': normalized,
+        'issued_at': issued_at,
+        'source': 'signed',
+    }
+    return cert, 'valid'
+
+
+def _resolve_certificate_verification(db, raw_code):
+    code = _normalize_cert_code(raw_code)
+    if not code:
+        return 'empty', None
+
+    if len(code) > 240 or ' ' in code:
+        return 'invalid_format', None
+
+    if _LEGACY_CERT_CODE_RE.fullmatch(code.upper()):
+        legacy_row = db.execute(
+            'SELECT account_username, cert_code, issued_at FROM completion_certificates WHERE cert_code=?',
+            (code.upper(),)
+        ).fetchone()
+        if legacy_row:
+            cert = {
+                'account_username': legacy_row['account_username'],
+                'cert_code': legacy_row['cert_code'],
+                'issued_at': legacy_row['issued_at'],
+                'source': 'registry',
+            }
+            return 'valid', cert
+        return 'not_found', None
+
+    signed_cert, signed_status = _verify_signed_cert_code(code)
+    if signed_status == 'valid':
+        return 'valid', signed_cert
+
+    row = db.execute(
+        'SELECT account_username, cert_code, issued_at FROM completion_certificates WHERE cert_code=?',
+        (code,)
+    ).fetchone()
+    if row:
+        cert = {
+            'account_username': row['account_username'],
+            'cert_code': row['cert_code'],
+            'issued_at': row['issued_at'],
+            'source': 'registry',
+        }
+        return 'valid', cert
+
+    return ('invalid_signature', None) if signed_status == 'invalid_signature' else ('invalid_format', None)
+
+
 def _issue_completion_certificate(db, account_username):
     existing = db.execute(
         'SELECT cert_code, issued_at FROM completion_certificates WHERE account_username=?',
         (account_username,)
     ).fetchone()
     if existing:
+        _, status = _verify_signed_cert_code(existing['cert_code'])
+        if status == 'valid':
+            return existing
+
+        upgraded_code = None
+        for _ in range(5):
+            candidate = _build_signed_cert_code(account_username, issued_at=existing['issued_at'])
+            try:
+                db.execute(
+                    'UPDATE completion_certificates SET cert_code=? WHERE account_username=?',
+                    (candidate, account_username)
+                )
+                upgraded_code = candidate
+                break
+            except sqlite3.IntegrityError:
+                upgraded_code = None
+
+        if upgraded_code:
+            return db.execute(
+                'SELECT cert_code, issued_at FROM completion_certificates WHERE account_username=?',
+                (account_username,)
+            ).fetchone()
         return existing
 
     cert_code = None
     for _ in range(5):
-        candidate = 'HL-CERT-' + secrets.token_hex(6).upper()
+        candidate = _build_signed_cert_code(account_username)
         try:
             db.execute(
                 'INSERT INTO completion_certificates (account_username, cert_code) VALUES (?, ?)',
@@ -345,6 +482,42 @@ def _issue_completion_certificate(db, account_username):
         'SELECT cert_code, issued_at FROM completion_certificates WHERE account_username=?',
         (account_username,)
     ).fetchone()
+
+
+def _migrate_certificate_codes_to_signed():
+    db = sqlite3.connect(DATABASE)
+    db.row_factory = sqlite3.Row
+    try:
+        rows = db.execute(
+            'SELECT account_username, cert_code, issued_at FROM completion_certificates'
+        ).fetchall()
+    except sqlite3.Error:
+        db.close()
+        return
+
+    changed = False
+    for row in rows:
+        _, status = _verify_signed_cert_code(row['cert_code'])
+        if status == 'valid':
+            continue
+        upgraded = None
+        for _ in range(5):
+            candidate = _build_signed_cert_code(row['account_username'], issued_at=row['issued_at'])
+            try:
+                db.execute(
+                    'UPDATE completion_certificates SET cert_code=? WHERE account_username=?',
+                    (candidate, row['account_username'])
+                )
+                upgraded = candidate
+                break
+            except sqlite3.IntegrityError:
+                upgraded = None
+        if upgraded:
+            changed = True
+
+    if changed:
+        db.commit()
+    db.close()
 
 
 def _is_full_completion(account_username, labs=None):
@@ -409,6 +582,7 @@ if os.path.exists(DATABASE):
     _migrate_progress_table()
     _migrate_sqli_flag_seed()
     _migrate_reward_tables()
+    _migrate_certificate_codes_to_signed()
 
 # ─────────────────────────────────────────────
 # PROGRESO DE USUARIO
@@ -855,6 +1029,11 @@ def progress_page():
         'SELECT cert_code, issued_at FROM completion_certificates WHERE account_username=?',
         (app_user,)
     ).fetchone()
+    verify_code = _normalize_cert_code(request.args.get('verify_code'))
+    verify_status = None
+    verify_cert = None
+    if request.args.get('verify_code') is not None:
+        verify_status, verify_cert = _resolve_certificate_verification(db, verify_code)
     return render_template('progress.html',
         labs=labs,
         completed=completed,
@@ -869,6 +1048,9 @@ def progress_page():
         special_rank=_get_special_rank(app_user),
         badge_catalog=unlocked_badges,
         certificate=cert,
+        verify_code=verify_code,
+        verify_status=verify_status,
+        verify_cert=verify_cert,
     )
 
 
@@ -915,14 +1097,12 @@ def download_completion_certificate():
 
 @app.route('/progress/certificate/verify')
 def verify_completion_certificate():
-    code = (request.args.get('code') or '').strip().upper()
+    code = _normalize_cert_code(request.args.get('code'))
     cert = None
-    if code:
-        cert = get_db().execute(
-            'SELECT account_username, cert_code, issued_at FROM completion_certificates WHERE cert_code=?',
-            (code,)
-        ).fetchone()
-    return render_template('certificate_verify.html', cert=cert, code=code)
+    status = None
+    if request.args.get('code') is not None:
+        status, cert = _resolve_certificate_verification(get_db(), code)
+    return render_template('certificate_verify.html', cert=cert, code=code, status=status)
 
 
 @app.route('/achievement/share/<token>')
