@@ -342,9 +342,10 @@
             hotfixes: ['px_scaling']
           });
           doc.addImage(img, 'PNG', 0, 0, src.width, src.height, undefined, 'FAST');
-          doc.save('{{ export_filename or ('hacklabs-certificate-' ~ learner ~ '.pdf') }}');
-          if (autoExportPdf && window.opener) {
-            window.setTimeout(function () { window.close(); }, 250);
+          if (autoExportPdf) {
+            window.location.replace(doc.output('bloburl'));
+          } else {
+            doc.save('{{ export_filename or ('hacklabs-certificate-' ~ learner ~ '.pdf') }}');
           }
         } catch (e) { console.error('PDF export error:', e); }
         finally { setBusy(false); }

@@ -261,124 +261,13 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   (function () {
     var pdfButton = document.getElementById('btn-open-pdf');
-
-    function setPdfBusy(isBusy) {
-      if (!pdfButton) return;
-      pdfButton.disabled = isBusy;
-      pdfButton.style.opacity = isBusy ? '0.7' : '1';
-      pdfButton.style.cursor = isBusy ? 'wait' : '';
-    }
-
-    function waitForFrame(frame) {
-      return new Promise(function (resolve, reject) {
-        var done = false;
-        var timer = window.setTimeout(function () {
-          if (done) return;
-          done = true;
-          reject(new Error('Certificate frame timed out'));
-        }, 15000);
-
-        frame.addEventListener('load', function () {
-          if (done) return;
-          window.clearTimeout(timer);
-          done = true;
-          resolve(frame);
-        }, { once: true });
-      });
-    }
-
-    async function openPdfInBrowser() {
-      var pdfTab = window.open('', '_blank');
-      if (!pdfTab) return;
-
-      pdfTab.document.write('<title>HackLabs Certificate PDF</title><body style="margin:0;background:#0b1220;color:#cbd5e1;font:14px Inter, sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh">Generando PDF...</body>');
-      pdfTab.document.close();
-
-      setPdfBusy(true);
-      var frame = document.createElement('iframe');
-      frame.src = '/certificate/view';
-      frame.setAttribute('aria-hidden', 'true');
-      frame.style.position = 'absolute';
-      frame.style.left = '-99999px';
-      frame.style.top = '0';
-      frame.style.width = '1600px';
-      frame.style.height = '900px';
-      frame.style.opacity = '0';
-      frame.style.pointerEvents = 'none';
-      document.body.appendChild(frame);
-
-      try {
-        await waitForFrame(frame);
-        var frameDoc = frame.contentDocument || frame.contentWindow.document;
-        var canvasNode = frameDoc.getElementById('certificate-canvas');
-        if (!canvasNode) {
-          throw new Error('Certificate canvas not found');
-        }
-
-        if (frameDoc.fonts && frameDoc.fonts.ready) {
-          try { await frameDoc.fonts.ready; } catch (e) {}
-        }
-
-        var source = await html2canvas(canvasNode, {
-          scale: 3,
-          useCORS: true,
-          backgroundColor: '#0a1525',
-          logging: false,
-          onclone: function (doc) {
-            doc.querySelectorAll('.glow').forEach(function (el) { el.style.display = 'none'; });
-            doc.querySelectorAll('.toolbar').forEach(function (el) { el.style.display = 'none'; });
-            var canvas = doc.getElementById('certificate-canvas');
-            if (canvas) {
-              canvas.style.borderRadius = '0';
-              canvas.style.boxShadow = 'none';
-              canvas.style.border = 'none';
-            }
-            doc.querySelectorAll('.frame').forEach(function (el) {
-              el.style.border = 'none';
-              el.style.padding = '3.5% 3%';
-            });
-            doc.querySelectorAll('.learner').forEach(function (el) {
-              el.style.border = 'none';
-              el.style.backdropFilter = 'none';
-              el.style.webkitBackdropFilter = 'none';
-              el.style.boxShadow = 'none';
-              el.style.background = 'rgba(10,22,45,.7)';
-            });
-            doc.querySelectorAll('.meta-card').forEach(function (el) {
-              el.style.backdropFilter = 'none';
-              el.style.webkitBackdropFilter = 'none';
-              el.style.border = '1px solid rgba(59,130,246,.12)';
-            });
-          }
-        });
-
-        var img = source.toDataURL('image/png');
-        var jsPDF = window.jspdf.jsPDF;
-        var doc = new jsPDF({
-          orientation: 'landscape',
-          unit: 'px',
-          format: [source.width, source.height],
-          hotfixes: ['px_scaling']
-        });
-        doc.addImage(img, 'PNG', 0, 0, source.width, source.height, undefined, 'FAST');
-        var blobUrl = doc.output('bloburl');
-        pdfTab.location.replace(blobUrl);
-      } catch (err) {
-        console.error('PDF open error:', err);
-        pdfTab.document.body.innerHTML = '<div style="padding:32px;text-align:center">No se pudo generar el PDF en el navegador.</div>';
-      } finally {
-        frame.remove();
-        setPdfBusy(false);
-      }
-    }
-
     if (pdfButton) {
-      pdfButton.addEventListener('click', openPdfInBrowser);
+      pdfButton.addEventListener('click', function () {
+        window.open('/certificate/view?export=pdf', '_blank');
+      });
     }
   })();
 </script>
