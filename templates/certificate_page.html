@@ -63,12 +63,6 @@
       <a href="/certificate/view" class="reward-chip reward-chip--gold">
         <i class="ph ph-eye text-xs"></i><span data-i18n="cert_view">Ver certificado</span>
       </a>
-      <a href="/certificate/view?download=1" class="reward-chip reward-chip--gold">
-        <i class="ph ph-download-simple text-xs"></i><span data-i18n="cert_download">Descargar HTML</span>
-      </a>
-      <button type="button" id="btn-open-pdf" class="reward-chip reward-chip--gold">
-        <i class="ph ph-file-pdf text-xs"></i><span data-i18n="cert_download_pdf">Descargar PDF</span>
-      </button>
       {% if certificate_linkedin_share_url %}
       <a href="{{ certificate_linkedin_share_url }}" target="_blank" rel="noopener" class="reward-chip" style="border-color:rgba(96,165,250,.42);background:rgba(37,99,235,.18);color:#dbeafe">
         <i class="ph ph-linkedin-logo text-xs"></i><span data-i18n="cert_share_linkedin">Compartir en LinkedIn</span>
@@ -261,14 +255,4 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  (function () {
-    var pdfButton = document.getElementById('btn-open-pdf');
-    if (pdfButton) {
-      pdfButton.addEventListener('click', function () {
-        window.open('/certificate/view?export=pdf', '_blank');
-      });
-    }
-  })();
-</script>
 {% endblock %}
