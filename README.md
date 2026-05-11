@@ -32,7 +32,7 @@
 
 ## 🎯 Características
 
-- **39 laboratorios** cubriendo OWASP Top 10 + vulnerabilidades avanzadas + IA Attacks
+- **42 laboratorios** cubriendo OWASP Top 10 + vulnerabilidades avanzadas + IA Attacks
 - Guías de resolución paso a paso (ES/EN)
 - Filtros de labs por criticidad (Critical / High / Medium)
 - Soporte **bilingüe** (Español / English)
@@ -72,6 +72,8 @@
 | CORS Misconfiguration | 🟠 High | Reflejo de Origin + Allow-Credentials |
 | CSRF – Cross-Site Request Forgery | 🟠 High | Cambio de contraseña sin token |
 | File Upload sin restricciones | 🔴 Critical | Webshell PHP, bypass doble extensión, reverse shell |
+| Forgot Password Recovery (Authentication Flaws) | 🟠 High | Toma de cuenta por validación insuficiente en 2 fases, enumeración de usuarios |
+| HTML Injection (GET/POST/Stored) | 🟠 High | Inyección HTML reflejada, por POST y almacenada en blog; bypass de filtros por dificultad |
 | Insecure Deserialization | 🔴 Critical | Python `pickle.loads()` → RCE |
 | JWT Manipulation | 🟠 High | `alg=none`, secreto débil (hashcat), algorithm confusion RS256→HS256 |
 | Login Bruteforce | 🟡 Medium | Hydra, Medusa, CrackMapExec |
@@ -84,6 +86,7 @@
 | Clickjacking | 🟠 High | Iframe overlay con slider de opacidad, frame-busting JS bypass via sandbox |
 | 2FA / MFA Bypass | 🔴 Critical | OTP leak en headers, brute force 4 dígitos, TOCTOU race condition |
 | Password Reset Poisoning | 🟠 High | Host header, X-Forwarded-Host, X-Host → token de reset enviado al atacante |
+| Session Hijacking | 🟠 High | SID predecible, token base64 sin firma, session fixation |
 | SSTI – Server-Side Template Injection | 🔴 Critical | Jinja2 `render_template_string` → RCE |
 | XSS – Cross-Site Scripting | 🟠 High | Reflected, Stored, DOM |
 | XXE – XML External Entity | 🟠 High | XML External Entity |
@@ -392,6 +395,34 @@ Flag objetivo: `HL{c5rf_57473_ch4n93_5ucc355}`
 | Easy | Sin validación — cualquier archivo con nombre original |
 | Medium | Blacklist de extensiones peligrosas (bypass: doble extensión `.php.jpg`) |
 | Hard | Whitelist + verificación Content-Type (bypass: magic bytes) |
+
+</details>
+
+<details>
+<summary><strong>Forgot Password Recovery (Authentication Flaws)</strong></summary>
+
+| Nivel | Comportamiento |
+|-------|---------------|
+| Easy | Fase 1: enumeración de usuarios (error explícito si no existe). Fase 2: cambio de contraseña sin validación secundaria. |
+| Medium | Flujo similar pero con otra cuenta válida para confirmar ausencia de factor de verificación. |
+| Hard | Misma debilidad lógica: conocer usuario válido y enviar nuevo password en fase 2, luego confirmar login con credenciales nuevas. |
+
+Flag objetivo: `HL{f0rg07_p455_r3c0v3ry_7ak30v3r}`
+
+</details>
+
+<details>
+<summary><strong>HTML Injection (GET/POST/Stored)</strong></summary>
+
+| Nivel | Comportamiento |
+|-------|---------------|
+| Easy | Sin filtrado: HTML se renderiza directamente en GET, POST y blog almacenado. |
+| Medium | Bloquea `<script>` y atributos `on*=`, pero aún renderiza muchas etiquetas HTML (layout injection). |
+| Hard | Escape completo: cualquier payload HTML aparece como texto plano sin interpretar. |
+
+Tres superficies de ataque: GET reflejado, POST render y blog persistente. Mismos payloads por dificultad en cada una.
+
+Flag objetivo: `HL{h7ml_1nj3ct10n_r3nd3r3d}`
 
 </details>
 
@@ -747,6 +778,21 @@ curl -X POST http://TARGET_IP/reset/request \
 curl -X POST http://TARGET_IP/reset/request \
   -H "X-Host: attacker.com" -d "email=victim@example.com"
 ```
+
+</details>
+
+<details>
+<summary><strong>Session Hijacking</strong></summary>
+
+| Nivel | Comportamiento |
+|-------|---------------|
+| Easy | SID predecible con formato fijo `SID-<username>-2024` — forja cookie de otro usuario sin autenticar. |
+| Medium | Token base64 sin firma — backend solo decodifica y confía en contenido sin HMAC. |
+| Hard | Session fixation: atacante fija SID controlado, víctima lo reutiliza al autenticarse, atacante lo secuestra tras login. |
+
+Objetivo: obtener sesión de admin para desbloquear flag.
+
+Flag objetivo: `HL{535510n_h1j4ck3d_4cc355}`
 
 </details>
 
