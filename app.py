@@ -3157,7 +3157,7 @@ def captcha():
 
 
 CAPTCHA_FLAG = 'HL{c4ptch4_byp4ss_m4th_0wn3d}'
-CAPTCHA_PASSWORD = 'ax4M]'
+CAPTCHA_PASSWORD = '4Ma]M'
 CAPTCHA_CHARSET = 'ax4M]'
 CAPTCHA_ERROR_MESSAGES = {
     'captcha': {

@@ -12,6 +12,8 @@ All notable changes to this repository are documented in this file.
 - feat(captcha): Dificultades Easy/Medium/Hard con retos matematicos progresivos, nonce en medium/hard y rate-limit aislado por dificultad.
 - fix(captcha): El flujo de errores usa redirect-after-post para que recargar la pagina regenere el CAPTCHA sin repetir mensajes de error.
 - fix(captcha): Mensajes del oraculo corregidos y traducidos en ES/EN.
+- fix(captcha): Script de bruteforce actualizado para usar `passwords.txt` generado con crunch y detectar correctamente el password valido.
+- feat(captcha): Campo password con boton de ojo para mostrar/ocultar la entrada.
 - docs(readme): README actualizado con el nuevo lab, total de laboratorios y comportamiento por dificultad.
 
 </details>
