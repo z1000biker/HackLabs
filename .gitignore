@@ -19,3 +19,7 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local-only (no subir)
+CLAUDE.md
+graphify-out/
