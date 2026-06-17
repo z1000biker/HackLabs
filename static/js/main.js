@@ -562,6 +562,7 @@ const T = {
     bf_login_title:  'Login without rate-limiting',
     bf_ssh_desc:     'Brute force attack against the SSH service of the target machine. No rate-limiting is active; authentication is handled by the host SSH server.',
     bf_smb_desc:     'Brute force attack against the SMB/CIFS service of the target machine (port 445).',
+    bf_ftp_desc:     'Brute force attack against the FTP service of the target machine (port 21). No rate-limiting is active.',
     // SQLi
     sqli_label:      'Search products',
     sqli_query:      'Query:',
@@ -644,8 +645,333 @@ const T = {
     cert_locked_post:       ' to unlock your free certificate of completion.',
     cert_progress_label:   'Current progress:',
     cert_go_progress:      'View my progress',
+  },
+  el: {
+    home:            'Αρχική',
+    logout:          'Αποσύνδεση',
+    footer_warning:  'Μόνο για εκπαιδευτική χρήση σε απομονωμένα περιβάλλοντα',
+    modal_title:     'Επίλυση εργαστηρίου',
+    btn_resolution:  'Προβολή επίλυσης',
+    close:           'Κλείσιμο',
+    cat_owasp_top_10:       'OWASP Top 10',
+    cat_extras:            'Επιπλέον',
+    cat_vulnerabilidades:  'Ευπάθειες',
+    cat_ia_attacks:        'Επιθέσεις AI',
+    labs:            'Εργαστήρια',
+    resolution_steps:'Βήματα εκμετάλλευσης',
+    tools_label:     'Εργαλεία',
+    // Home
+    badge_text:      'Σκόπιμα ευπαθές · Μόνο για εκπαιδευτική χρήση',
+    filter_label:    'Φίλτρο:',
+    filter_all:      'Όλα',
+    open_lab:        'Άνοιγμα lab',
+    test_credentials:'Χρήστες & Κωδικοί',
+    col_username:    'Χρήστης',
+    col_password:    'Κωδικός',
+    col_hash:        'Hash MD5',
+    col_role:        'Ρόλος',
+    stat_total:      'Σύνολο Labs',
+    stat_critical:   'Κρίσιμα',
+    stat_high:       'Υψηλά',
+    stat_medium:     'Μεσαία',
+    hero_by:         'Πλατφόρμα εκπαίδευσης ηθικού hacking από',
+    hero_rest:       'Εξάσκηση στο OWASP Top 10 (2021) και άλλα με Burp Suite, sqlmap, hydra και εργαλεία Kali Linux.',
+    lab_cat_count:   'labs',
+    // A05 Misconfig
+    misconfig_title: 'Λανθασμένες ρυθμίσεις',
+    misconfig_item1: 'Πίνακας διαχείρισης προσβάσιμος χωρίς αυθεντικοποίηση',
+    misconfig_item2: 'Εκτεθειμένο αποθετήριο Git',
+    misconfig_item3: 'Πλήρες stack trace εκτεθειμένο σε σφάλματα',
+    misconfig_item4: 'Εσωτερικό API χρηστών προσβάσιμο χωρίς αυθεντικοποίηση',
+    misconfig_hint:  'Χρησιμοποίησε εργαλεία fuzzing καταλόγων για να ανακαλύψεις εκτεθειμένα endpoints.',
+    misconfig_admin_panel: 'Πίνακας διαχείρισης — Χωρίς αυθεντικοποίηση',
+    // Shared form labels
+    lbl_username:    'Χρήστης',
+    lbl_password:    'Κωδικός',
+    lbl_search:      'Αναζήτηση',
+    lbl_search_products: 'Αναζήτηση προϊόντων',
+    lbl_host_ip:     'Host / IP',
+    lbl_output:      'Έξοδος',
+    lbl_result:      'Αποτέλεσμα',
+    lbl_target_url:  'URL στόχου',
+    lbl_file_path:   'Διαδρομή αρχείου',
+    lbl_xml_payload: 'XML Payload',
+    lbl_jwt_token:   'JWT Token',
+    // Shared buttons
+    btn_login:       'Σύνδεση',
+    btn_search:      'Αναζήτηση',
+    btn_render:      'Απόδοση',
+    btn_fetch:       'Ανάκτηση',
+    gh_star_tooltip: 'Αστέρι στο GitHub',
+    btn_read:        'Ανάγνωση',
+    btn_ping:        'Ping',
+    btn_upload:      'Μεταφόρτωση',
+    btn_parse_xml:   'Ανάλυση XML',
+    btn_go:          'Μετάβαση',
+    btn_change_pw:   'Αλλαγή κωδικού',
+    btn_post_comment:'Δημοσίευση σχολίου',
+    btn_continue:    'Συνέχεια',
+    btn_verify:      'Επαλήθευση',
+    btn_send_put:    'Αποστολή PUT',
+    btn_launch_csrf: 'Εκτέλεση CSRF',
+    // Shared placeholders
+    ph_search:       'Αναζήτηση...',
+    ph_search_products: 'Αναζήτηση προϊόντων...',
+    ph_redirect_url: 'https://example.com/dashboard',
+    ph_comment_name: 'Όνομα',
+    ph_new_email:    'neo@email.com',
+    // SSTI
+    ssti_label:      'Είσοδος template',
+    ssti_rendered:   'Αποτέλεσμα απόδοσης',
+    // Open Redirect
+    or_desc:         'Αυτή η πύλη ανακατευθύνει χρήστες μετά από ενέργειες. Η παράμετρος προορισμού δεν επικυρώνεται.',
+    or_examples:     'Παραδείγματα',
+    or_comment1:     '# Ανακατεύθυνση σε εξωτερικό site (phishing)',
+    or_comment2:     '# Παράκαμψη βασικών φίλτρων',
+    // JWT
+    jwt_generate:    'Δημιουργία Token',
+    jwt_btn_gen:     'Δημιουργία JWT',
+    jwt_secret_used: 'Χρησιμοποιούμενο secret:',
+    jwt_verify:      'Επαλήθευση / Παραποίηση Token',
+    jwt_btn_verify:  'Επαλήθευση',
+    jwt_decoded:     'Αποκωδικοποιημένο payload',
+    // Deserialization
+    deser_title:     'Αποσειριοποίηση αντικειμένου Python (pickle)',
+    deser_label:     'Payload (base64 pickle)',
+    deser_ph:        'Εισήγαγε ένα σειριοποιημένο pickle σε base64...',
+    deser_btn:       'Αποσειριοποίηση',
+    deser_example:   'Ασφαλές παράδειγμα (dict):',
+    deser_result:    'Αποτέλεσμα',
+    // CORS
+    cors_api_title:  'API εσωτερικών δεδομένων',
+    cors_api_desc:   'Το API επιστρέφει ευαίσθητα δεδομένα και αντικατοπτρίζει οποιοδήποτε Origin header με Access-Control-Allow-Credentials: true.',
+    cors_comment1:   '# Ευπαθές endpoint',
+    cors_comment2:   '# Δοκιμή με curl (πρόσεξε τα CORS headers)',
+    cors_btn:        'Cross-origin αίτημα',
+    cors_response:   'Απόκριση:',
+    cors_poc_title:  'PoC — Κακόβουλη σελίδα',
+    // XSS
+    xss_tab_reflected: 'Reflected',
+    xss_tab_stored:  'Stored',
+    xss_tab_dom:     'DOM-based',
+    xss_results_for: 'Αποτελέσματα για:',
+    xss_name_ph:     'Όνομα',
+    xss_btn_post:    'Δημοσίευση σχολίου',
+    xss_dom_label:   'Δυναμική έξοδος (από URL fragment):',
+    xss_dom_hint:    'Πρόσθεσε fragment στο URL: #<img src=x onerror=alert(1)>',
+    // CSRF
+    csrf_user_label: 'Χρήστης:',
+    csrf_id_label:   'ID:',
+    csrf_role_label: 'Ρόλος:',
+    csrf_new_pw:     'Νέος κωδικός',
+    csrf_ph_new_pw:  'Εισήγαγε κωδικό',
+    csrf_btn_change: 'Αλλαγή κωδικού',
+    csrf_attack_title: 'Επίθεση CSRF — Αυτόματη υποβολή',
+    csrf_victim_id:  'ID χρήστη-θύματος',
+    csrf_btn_launch: 'Εκτέλεση CSRF',
+    // File Upload
+    lab_title_file_upload:    'Μεταφόρτωση αρχείων χωρίς περιορισμούς',
+    lab_title_api_attacks:    'Επιθέσεις API — Μη ασφαλή APIs',
+    lab_title_business_logic: 'Ελαττώματα επιχειρησιακής λογικής',
+    lab_title_container_escape: 'Διαφυγή από Container',
+    lab_title_forgot_recovery: 'Ανάκτηση κωδικού (Ελαττώματα αυθεντικοποίησης)',
+    lab_title_html_injection: 'HTML Injection (GET/POST/Stored)',
+    lab_title_oauth:          'Επιθέσεις OAuth 2.0',
+    lab_title_race_condition: 'Race Condition / TOCTOU',
+    lab_title_session_hijacking: 'Υποκλοπή συνεδρίας',
+    htmlinj_tab_get:          'GET Reflected',
+    htmlinj_tab_post:         'POST Render',
+    htmlinj_tab_stored:       'Stored Blog',
+    // OAuth
+    oauth_flow:          'Ροή εξουσιοδότησης',
+    oauth_flow_desc:     'Πάτα το κουμπί για να ξεκινήσεις τη ροή OAuth 2.0. Ο server θα σε ανακατευθύνει στο callback με κωδικό εξουσιοδότησης.',
+    oauth_start_btn:     'Εκκίνηση ροής OAuth',
+    oauth_token:         'Access Token',
+    oauth_userinfo_hint: 'Χρησιμοποίησε αυτό το token για πρόσβαση σε προστατευμένους πόρους:',
+    oauth_how:           'Πώς λειτουργεί η επίθεση redirect_uri',
+    oauth_how_desc:      'Στο OAuth 2.0, κατά την εξουσιοδότηση μιας εφαρμογής ο server ανακατευθύνει τον χρήστη στην παράμετρο redirect_uri με κωδικό εξουσιοδότησης. Αν ο server δεν επικυρώνει ότι αυτό το URI ανήκει στη νόμιμη εφαρμογή, ένας επιτιθέμενος μπορεί να αντικαταστήσει το redirect_uri με URL υπό τον δικό του έλεγχο και να κλέψει τον κωδικό.',
+    oauth_step1:         'Ο χρήστης πατάει "Εξουσιοδότηση" στη νόμιμη εφαρμογή',
+    oauth_step2:         'Ο επιτιθέμενος αντικαθιστά την παράμετρο redirect_uri με URL υπό τον έλεγχό του',
+    oauth_step3:         'Ο κωδικός εξουσιοδότησης αποστέλλεται στον server του επιτιθέμενου',
+    oauth_step4:         'Ο επιτιθέμενος ανταλλάσσει τον κωδικό με access token',
+    oauth_step5:         'Ο επιτιθέμενος αποκτά πρόσβαση στους πόρους του θύματος',
+    // Business Logic
+    shop_catalog:        'Κατάλογος προϊόντων',
+    shop_balance:        'Υπόλοιπο:',
+    shop_prod1_name:     'HackLabs Pro License',
+    shop_prod1_desc:     'Πλήρης πρόσβαση σε όλα τα labs',
+    shop_qty:            'Ποσ:',
+    shop_add_btn:        'Προσθήκη στο καλάθι',
+    shop_prod2_name:     'Zero-Day Exploit Kit',
+    shop_prod2_desc:     'Προσομοιωμένο framework exploits',
+    shop_prod3_name:     'Υπηρεσία VPN',
+    shop_prod3_desc:     'Ανώνυμο VPN για 1 έτος',
+    shop_cart:           'Καλάθι',
+    shop_total:          'Σύνολο',
+    shop_cart_empty:     'Το καλάθι είναι άδειο.',
+    shop_apply_coupon:   'Εφαρμογή',
+    shop_checkout:       'Αγορά',
+    shop_clear_cart:     'Εκκαθάριση',
+    // Race Condition
+    race_balances:       'Υπόλοιπα',
+    race_alice:          'Alice',
+    race_bob:            'Bob',
+    race_transfer_btn:   'Μεταφορά Alice → Bob',
+    race_reset_btn:      'Επαναφορά',
+    race_attack_panel:   'Πάνελ επίθεσης Race',
+    race_attack_desc:    'Εκτελεί 10 ταυτόχρονα αιτήματα $5 το καθένα. Αν η Alice έχει $10.00 και ο server έχει race condition, ο Bob μπορεί να καταλήξει με πάνω από $10.00.',
+    race_run_btn:        'Εκτέλεση Race Attack',
+    race_log:            'Αρχείο αποτελεσμάτων',
+    // Container Escape
+    container_recon:         'Αναγνώριση Container',
+    container_check_in:      'Εκτέλεση σε container',
+    container_check_socket:  '/var/run/docker.sock',
+    container_check_root:    'Εκτέλεση ως root',
+    container_check_priv:    'Privileged mode',
+    container_check_hostpath:'Εγγράψιμο μονοπάτι host',
+    container_check_id:      'έξοδος id',
+    container_check_cap:     'CapEff (ενεργές δυνατότητες)',
+    upload_dropzone: 'Πάτα ή σύρε αρχείο εδώ',
+    upload_no_restrict: 'Χωρίς περιορισμούς τύπου αρχείου',
+    upload_btn:      'Μεταφόρτωση',
+    upload_open:     'Άνοιγμα αρχείου',
+    upload_list:     'Μεταφορτωμένα αρχεία (/uploads/)',
+    upload_access:   'Πρόσβαση →',
+    upload_del_title: 'Διαγραφή αρχείου',
+    upload_del_irrev: 'Αυτή η ενέργεια δεν αναιρείται',
+    upload_del_confirm: 'Διαγραφή',
+    upload_del_cancel: 'Ακύρωση',
+    upload_del_ok:   'Διαγραφή',
+    // XXE
+    xxe_btn_normal:  'Κανονικό XML',
+    xxe_btn_xxe:     'XXE Payload',
+    xxe_form_title:  'Δημιουργία ticket υποστήριξης',
+    xxe_lbl_full_name:'Πλήρες όνομα',
+    xxe_lbl_email:   'Email',
+    xxe_lbl_department:'Τμήμα',
+    xxe_lbl_priority:'Προτεραιότητα',
+    xxe_lbl_description:'Περιγραφή προβλήματος',
+    xxe_ph_name:     'Γιάννης Παπαδόπουλος',
+    xxe_ph_email:    'giannis@etaireia.gr',
+    xxe_ph_message:  'Περίγραψε το πρόβλημα αναλυτικά...',
+    xxe_btn_send:    'Υποβολή Ticket',
+    xxe_ticket_created:'Το ticket δημιουργήθηκε επιτυχώς',
+    xxe_subject:     'Θέμα:',
+    xxe_message:     'Μήνυμα:',
+    xxe_recent_tickets:'Πρόσφατα tickets',
+    xxe_col_user:    'Χρήστης',
+    xxe_col_subject: 'Θέμα',
+    xxe_col_status:  'Κατάσταση',
+    xxe_opt_support: 'Τεχνική υποστήριξη',
+    xxe_opt_sales:   'Πωλήσεις',
+    xxe_opt_hr:      'Ανθρώπινο δυναμικό',
+    xxe_opt_admin:   'Διαχείριση',
+    xxe_opt_security:'Ασφάλεια IT',
+    xxe_opt_low:     '🟢 Χαμηλή',
+    xxe_opt_medium:  '🟡 Μεσαία',
+    xxe_opt_high:    '🟠 Υψηλή',
+    xxe_opt_critical:'🔴 Κρίσιμη',
+    xxe_status_resolved:'✓ Επιλύθηκε',
+    xxe_status_pending:'⏳ Εκκρεμεί',
+    xxe_parsed:      'Αποτέλεσμα ανάλυσης',
+    xxe_name:        'όνομα:',
+    xxe_email:       'email:',
+    // Path Traversal
+    pt_btn_read:     'Ανάγνωση',
+    // Bruteforce
+    bf_tab_http:     'HTTP Login',
+    bf_login_title:  'Login χωρίς rate-limiting',
+    bf_ssh_desc:     'Επίθεση brute force στην υπηρεσία SSH του στόχου. Δεν υπάρχει rate-limiting· η αυθεντικοποίηση γίνεται από τον SSH server του host.',
+    bf_smb_desc:     'Επίθεση brute force στην υπηρεσία SMB/CIFS του στόχου (θύρα 445).',
+    bf_ftp_desc:     'Επίθεση brute force στην υπηρεσία FTP του στόχου (θύρα 21). Δεν υπάρχει rate-limiting.',
+    // SQLi
+    sqli_label:      'Αναζήτηση προϊόντων',
+    sqli_query:      'Ερώτημα:',
+    sqli_no_results: 'Κανένα αποτέλεσμα για',
+    // CMDi
+    cmdi_output:     'Έξοδος',
+    // IDOR
+    idor_label_id:   'ID χρήστη',
+    idor_btn_view:   'Προβολή προφίλ',
+    idor_profile:    'Προφίλ — ID:',
+    idor_no_user:    'Δεν βρέθηκε χρήστης με ID=',
+    // Insecure Design
+    insec_btn_continue: 'Συνέχεια',
+    insec_user_label:   'Χρήστης:',
+    insec_lbl_answer:   'Απάντηση',
+    insec_btn_verify:   'Επαλήθευση',
+    insec_compromised:  'Ο λογαριασμός παραβιάστηκε!',
+    insec_user_inline:  'Χρήστης:',
+    insec_pw_label:     'Κωδικός σε απλό κείμενο:',
+    // Outdated
+    out_label:       'Αναζήτηση',
+    out_ph:          'Αναζήτηση προϊόντων...',
+    out_searching:   'Αναζήτηση:',
+    out_enter:       'Εισήγαγε όρο αναζήτησης...',
+    // Integrity
+    int_target_id:   'ID χρήστη-στόχου',
+    int_new_role:    'Νέος ρόλος',
+    int_new_email:   'Νέο email (προαιρετικό)',
+    int_btn_send:    'Αποστολή PUT',
+    // Logging
+    log_empty:       '(κενό — κανένα συμβάν ασφαλείας δεν καταγράφεται)',
+    // SSRF
+    ssrf_label:      'URL στόχου',
+    ssrf_response:   'Απόκριση από:',
+    // Auth Failures
+    auth_lbl_user:   'Χρήστης',
+    auth_lbl_pass:   'Κωδικός',
+    auth_btn_login:  'Σύνδεση',
+    difficulty_label: 'Δυσκολία',
+    sidebar_search:  'Αναζήτηση lab...',
+    // User menu
+    nav_profile:     'Το προφίλ μου',
+    nav_progress:    'Η πρόοδός μου',
+    nav_logout:      'Αποσύνδεση',
+    // Progress / complete button
+    complete_lab:    'Ολοκλήρωση',
+    completed_lab:   'Ολοκληρώθηκε',
+    progress_hint_title: 'Πρόοδος εργαστηρίων',
+    progress_hint_body:  'Για αποθήκευση προόδου χρειάζεσαι δικό σου λογαριασμό. Οι χρήστες εργαστηρίου (admin, alice…) είναι μόνο για εξάσκηση.',
+    progress_hint_cta:   'Δημιουργία λογαριασμού',
+    // Certificate page
+    nav_certificate:       'Πιστοποιητικό',
+    cert_page_title:       'Πιστοποιητικό ολοκλήρωσης',
+    cert_page_sub:         'Ολοκλήρωσε το 100% των εργαστηρίων για να ξεκλειδώσεις το δωρεάν πιστοποιητικό.',
+    cert_unlocked:         'Πιστοποιητικό ξεκλειδώθηκε',
+    cert_holder:           'Κάτοχος',
+    cert_rank:             'Βαθμίδα',
+    cert_issuer:           'Εκδότης',
+    cert_issued:           'Εκδόθηκε',
+    cert_code_label:       'Κωδικός πιστοποιητικού',
+    cert_code_label2:      'Κωδικός',
+    cert_view:             'Προβολή πιστοποιητικού',
+    cert_download:         'Λήψη HTML',
+    cert_download_pdf:     'Λήψη PDF',
+    cert_share_linkedin:   'Κοινοποίηση στο LinkedIn',
+    cert_verify_title:     'Επικύρωση πιστοποιητικού',
+    cert_verify_sub:       'Επαλήθευση κωδικών πιστοποιητικών που εκδόθηκαν από το HackLabs.',
+    cert_verify_btn:       'Επικύρωση κωδικού',
+    cert_verify_hint:      'Τα πιστοποιητικά HackLabs επικυρώνονται offline μέσω κρυπτογραφικής υπογραφής.',
+    cert_valid:            'Έγκυρο πιστοποιητικό',
+    cert_invalid:          'Μη έγκυρο πιστοποιητικό',
+    cert_user:             'Χρήστης',
+    cert_err_format:       'Μη έγκυρη μορφή. Αντίγραψε ολόκληρο τον κωδικό πιστοποιητικού HackLabs.',
+    cert_err_sig:          'Μη έγκυρος κωδικός: η κρυπτογραφική υπογραφή δεν αντιστοιχεί σε πιστοποιητικό HackLabs.',
+    cert_err_notfound:     'Ο κωδικός δεν βρέθηκε σε αυτή την εγκατάσταση HackLabs.',
+    cert_err_empty:        'Εισήγαγε κωδικό για επικύρωση.',
+    cert_locked_title:     'Πιστοποιητικό κλειδωμένο',
+    cert_locked_pre:       'Ολοκλήρωσε το ',
+    cert_locked_highlight:  '100% των εργαστηρίων',
+    cert_locked_post:       ' για να ξεκλειδώσεις το δωρεάν πιστοποιητικό ολοκλήρωσης.',
+    cert_progress_label:   'Τρέχουσα πρόοδος:',
+    cert_go_progress:      'Προβολή προόδου',
   }
 };
+
+// ── Language labels (used by setLang / initLangDropdown) ─────────
+const LANG_LABELS = { es: 'Español', en: 'English', el: 'Ελληνικά' };
+const LANG_CODES  = Object.keys(LANG_LABELS);            // ['es','en','el']
 
 // ── State ─────────────────────────────────────────────────────────
 const HL = {
@@ -688,7 +1014,7 @@ function applyTranslations() {
   });
 
   // Sync lang button active states
-  ['es', 'en'].forEach(l => {
+  LANG_CODES.forEach(l => {
     const btn = document.getElementById('lang-' + l);
     if (btn) btn.classList.toggle('active-lang', l === HL.lang);
   });
@@ -739,9 +1065,9 @@ function setLang(lang) {
   localStorage.setItem('hl_lang', lang);
   // Cambia el texto del botón principal
   const langSelected = document.getElementById('lang-selected');
-  if (langSelected) langSelected.textContent = lang === 'en' ? 'English' : 'Español';
+  if (langSelected) langSelected.textContent = LANG_LABELS[lang] || lang;
   // Actualiza el check visual
-  ['es', 'en'].forEach(l => {
+  LANG_CODES.forEach(l => {
     const check = document.getElementById('lang-check-' + l);
     if (check) {
       check.innerHTML = (l === lang)
@@ -750,16 +1076,13 @@ function setLang(lang) {
     }
   });
   // Actualiza el estado activo en el botón
-  ['es', 'en'].forEach(l => {
+  LANG_CODES.forEach(l => {
     const btn = document.getElementById('lang-' + l);
     if (btn) {
       btn.classList.toggle('active', l === lang);
       // Aplica color amarillo al texto de la opción activa
-      if (l === lang) {
-        btn.querySelector('span.font-semibold').style.color = '#CEFF00';
-      } else {
-        btn.querySelector('span.font-semibold').style.color = '';
-      }
+      const span = btn.querySelector('span.font-semibold');
+      if (span) span.style.color = (l === lang) ? '#CEFF00' : '';
     }
   });
   applyTranslations();
@@ -786,7 +1109,7 @@ function initLangDropdown() {
   const selected = document.getElementById('lang-selected');
 
   // set initial state from HL.lang
-  selected.textContent = HL.lang === 'en' ? 'English' : 'Español';
+  selected.textContent = LANG_LABELS[HL.lang] || HL.lang;
   // mark active option
   list.querySelectorAll('.lang-option').forEach(li => li.classList.toggle('active', li.dataset.lang === HL.lang));
 
@@ -822,7 +1145,7 @@ function initLangDropdown() {
   window._initLangDropdown = () => {
     const sel = document.getElementById('lang-selected');
     const hl = HL.lang || 'es';
-    sel && (sel.textContent = hl === 'en' ? 'English' : 'Español');
+    sel && (sel.textContent = LANG_LABELS[hl] || hl);
     list.querySelectorAll('.lang-option').forEach(li => li.classList.toggle('active', li.dataset.lang === hl));
   };
 }
@@ -918,7 +1241,7 @@ function openResolution() {
       hljs.highlightElement(code);
     }
     const btn = document.createElement('button');
-    btn.title = HL.lang === 'en' ? 'Copy' : 'Copiar';
+    btn.title = HL.lang === 'en' ? 'Copy' : (HL.lang === 'el' ? 'Αντιγραφή' : 'Copiar');
     btn.innerHTML = '<i class="ph ph-copy"></i>';
     btn.style.cssText = [
       'position:absolute', 'top:8px', 'right:8px',
@@ -934,7 +1257,7 @@ function openResolution() {
         btn.innerHTML = '<i class="ph ph-check"></i>';
         btn.style.color = '#4ade80';
         setTimeout(() => { btn.innerHTML = '<i class="ph ph-copy"></i>'; btn.style.color = '#9ca3af'; }, 1500);
-        showToast(HL.lang === 'en' ? 'Copied!' : '¡Copiado!');
+        showToast(HL.lang === 'en' ? 'Copied!' : (HL.lang === 'el' ? 'Αντιγράφηκε!' : '¡Copiado!'));
       });
     });
     pre.appendChild(btn);
@@ -957,7 +1280,7 @@ document.addEventListener('dblclick', e => {
   const target = e.target.closest('pre, code');
   if (!target) return;
   copyToClipboard(target.textContent.trim(), () => {
-    showToast(HL.lang === 'en' ? 'Copied!' : '¡Copiado!');
+    showToast(HL.lang === 'en' ? 'Copied!' : (HL.lang === 'el' ? 'Αντιγράφηκε!' : '¡Copiado!'));
   });
 });
 
@@ -1194,6 +1517,7 @@ function showErrorToast(msg) {
 function showLevelUpOverlay(level, levelName, levelIcon, opts = {}) {
   if (document.getElementById('levelup-overlay')) return;
   const isEn = (typeof HL !== 'undefined' && HL.lang === 'en');
+  const isEl = (typeof HL !== 'undefined' && HL.lang === 'el');
   let done = false;
 
   const overlay = document.createElement('div');
@@ -1220,11 +1544,11 @@ function showLevelUpOverlay(level, levelName, levelIcon, opts = {}) {
 
   const lvlLabel  = `LVL ${level + 1}`;
   const titleText = 'LEVEL UP';
-  const accessTxt = isEn ? '// ACCESS GRANTED //' : '// ACCESO CONCEDIDO //';
-  const btnLabel  = isEn ? 'Continue' : 'Continuar';
-  const hintTxt   = isEn ? 'Click to continue' : 'Haz clic para continuar';
+  const accessTxt = isEn ? '// ACCESS GRANTED //' : (isEl ? '// ΠΡΟΣΒΑΣΗ ΕΠΙΤΥΧΗΣ //' : '// ACCESO CONCEDIDO //');
+  const btnLabel  = isEn ? 'Continue' : (isEl ? 'Συνέχεια' : 'Continuar');
+  const hintTxt   = isEn ? 'Click to continue' : (isEl ? 'Πάτα για συνέχεια' : 'Haz clic para continuar');
   const iconClass = levelIcon || 'ph-graduation-cap';
-  const shareLabel = isEn ? 'Share on LinkedIn' : 'Compartir en LinkedIn';
+  const shareLabel = isEn ? 'Share on LinkedIn' : (isEl ? 'Κοινοποίηση στο LinkedIn' : 'Compartir en LinkedIn');
   const shareBtn = opts.linkedinShareUrl
     ? `<a class="overlay-share-btn" href="${opts.linkedinShareUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><i class="ph ph-linkedin-logo"></i>${shareLabel}</a>`
     : '';
@@ -1263,15 +1587,16 @@ function showLevelUpOverlay(level, levelName, levelIcon, opts = {}) {
 function showBadgeOverlay(badge, opts = {}) {
   if (document.getElementById('badgeup-overlay')) return;
   const isEn = (typeof HL !== 'undefined' && HL.lang === 'en');
+  const isEl = (typeof HL !== 'undefined' && HL.lang === 'el');
   let done = false;
   const overlay = document.createElement('div');
   overlay.id = 'badgeup-overlay';
 
-  const title = isEn ? 'NEW BADGE' : 'NUEVO BADGE';
-  const subtitle = isEn ? 'Achievement unlocked' : 'Logro desbloqueado';
-  const btnLabel = isEn ? 'Continue' : 'Continuar';
-  const hintTxt = isEn ? 'Click to continue' : 'Haz clic para continuar';
-  const shareLabel = isEn ? 'Share on LinkedIn' : 'Compartir en LinkedIn';
+  const title = isEn ? 'NEW BADGE' : (isEl ? 'ΝΕΟ BADGE' : 'NUEVO BADGE');
+  const subtitle = isEn ? 'Achievement unlocked' : (isEl ? 'Επίτευγμα ξεκλειδώθηκε' : 'Logro desbloqueado');
+  const btnLabel = isEn ? 'Continue' : (isEl ? 'Συνέχεια' : 'Continuar');
+  const hintTxt = isEn ? 'Click to continue' : (isEl ? 'Πάτα για συνέχεια' : 'Haz clic para continuar');
+  const shareLabel = isEn ? 'Share on LinkedIn' : (isEl ? 'Κοινοποίηση στο LinkedIn' : 'Compartir en LinkedIn');
   const shareBtn = badge.linkedin_share_url
     ? `<a class="overlay-share-btn" href="${badge.linkedin_share_url}" target="_blank" rel="noopener" onclick="event.stopPropagation();"><i class="ph ph-linkedin-logo"></i>${shareLabel}</a>`
     : '';
@@ -1415,8 +1740,9 @@ function initAiChatLoading() {
       _injectAiTypingIndicator();
 
       const isEn = (typeof HL !== 'undefined' && HL.lang === 'en');
+      const isEl = (typeof HL !== 'undefined' && HL.lang === 'el');
       const btn = form.querySelector('button[type="submit"]');
-      const label = form.dataset.aiSubmitLabel || (isEn ? 'Thinking' : 'Pensando');
+      const label = form.dataset.aiSubmitLabel || (isEn ? 'Thinking' : (isEl ? 'Επεξεργασία' : 'Pensando'));
       if (btn) {
         btn.disabled = true;
         btn.classList.add('ai-submit-loading');
